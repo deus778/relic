@@ -245,6 +245,7 @@ int cp_etrs_ver(int thres, bn_t *td, bn_t *y, int max, etrs_t *s, int size,
 
 int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg, int len,
 		ec_t pk, ec_t pp) {
+	(void)pp;
 	bn_t n, r;
 	ec_t w[2];
 	int i, result = RLC_OK;
@@ -301,6 +302,8 @@ int cp_etrs_ext(bn_t *td, bn_t *y, int max, etrs_t *p, int *size, uint8_t *msg, 
 
 int cp_etrs_uni(int thres, bn_t *td, bn_t *y, int max, etrs_t *p, int *size,
 		uint8_t *msg, int len, bn_t sk, ec_t pk, ec_t pp) {
+	(void)thres;
+	(void)pp;
 	int i, result = 0;
 	bn_t l, n, u, v;
 	ec_t t, w[2];

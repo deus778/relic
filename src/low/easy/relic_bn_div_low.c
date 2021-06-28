@@ -79,6 +79,7 @@ void bn_divn_low(dig_t *c, dig_t *d, dig_t *a, int sa, dig_t *b, int sb) {
 	/* Find the remaining digits. */
 	for (i = n; i >= (t + 1); i--) {
 		dig_t tmp;
+		(void)tmp;
 
 		if (i > sa) {
 			continue;

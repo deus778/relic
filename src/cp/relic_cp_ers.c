@@ -148,6 +148,7 @@ int cp_ers_ver(bn_t td, ers_t *s, int size, uint8_t *msg, int len, ec_t pp) {
 
 int cp_ers_ext(bn_t td, ers_t *p, int *size, uint8_t *msg, int len, ec_t pk,
 		ec_t pp) {
+	(void)pp;
 	bn_t n, r;
 	ec_t y[2];
 	int result = RLC_OK;
