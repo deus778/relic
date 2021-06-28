@@ -41,6 +41,7 @@
 dig_t bn_sqra_low(dig_t *c, const dig_t *a, int size) {
 	int i;
 	dig_t t, c0, c1;
+	(void)t;
 
 	t = a[0];
 

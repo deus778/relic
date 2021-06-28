@@ -380,7 +380,7 @@ const ep_t *ep_curve_get_tab(void) {
 }
 
 
-iso_t ep_curve_get_iso() {
+iso_t ep_curve_get_iso(void) {
 #ifdef EP_CTMAP
 	return &core_get()->ep_iso;
 #else
