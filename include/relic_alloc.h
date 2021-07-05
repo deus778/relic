@@ -70,7 +70,7 @@
 #if ALLOC == DYNAMIC
 #define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
 #else
-#define RLC_ALLOCA(T, S)		(T*) alloca((S) * sizeof(T))
+#define RLC_ALLOCA(T, S)		(T*) malloc((S) * sizeof(T))
 #endif
 
 #endif
