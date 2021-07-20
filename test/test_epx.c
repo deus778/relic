@@ -542,7 +542,7 @@ static int multiplication2(void) {
 		TEST_END;
 #endif
 
-		TEST_CASE("multiplication by digit is correct") {
+		TEST_CASE("point multiplication by digit is correct") {
 			ep2_mul_dig(r, p, 0);
 			TEST_ASSERT(ep2_is_infty(r), end);
 			ep2_mul_dig(r, p, 1);
@@ -1072,7 +1072,7 @@ static int frobenius2(void) {
 
 		ep2_curve_get_ord(n);
 
-		TEST_CASE("frobenius and scalar multiplication are consistent") {
+		TEST_CASE("frobenius and point multiplication are consistent") {
 			ep2_rand(a);
 			ep2_frb(b, a, 1);
 			d->used = RLC_FP_DIGS;
@@ -1854,6 +1854,9 @@ static int simultaneous4(void) {
 			ep4_mul(p[1], p[1], k[1]);
 			ep4_add(p[1], p[1], p[0]);
 			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
+			ep4_mul_sim(r, p[0], k[0], p[1], k[1]);
+			ep4_mul_sim_lot(p[1], p, k, 2);
+			TEST_ASSERT(ep4_cmp(p[1], r) == RLC_EQ, end);
 		} TEST_END;
 
 #if EP_SIM == BASIC || !defined(STRIP)
@@ -2091,7 +2094,7 @@ static int frobenius4(void) {
 
 		ep4_curve_get_ord(n);
 
-		TEST_CASE("frobenius and scalar multiplication are consistent") {
+		TEST_CASE("frobenius and point multiplication are consistent") {
 			ep4_rand(a);
 			ep4_frb(b, a, 1);
 			d->used = RLC_FP_DIGS;

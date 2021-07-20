@@ -83,7 +83,6 @@ void ep_blind(ep_t r, const ep_t p) {
 
 	RLC_TRY {
 		fp_new(rand);
-
 		fp_rand(rand);
 #if EP_ADD == BASIC
 		(void)rand;
@@ -284,6 +283,8 @@ void ep_write_bin(uint8_t *bin, int len, const ep_t a, int pack) {
 	ep_t t;
 
 	ep_null(t);
+
+	memset(bin, 0, len);
 
 	if (ep_is_infty(a)) {
 		if (len < 1) {

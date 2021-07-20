@@ -42,132 +42,26 @@
 
 static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 	int i, j, l, _l[4];
-	bn_t n, _k[4], u[4], v[4];
+	bn_t n, _k[4], u;
 	int8_t naf[4][RLC_FP_BITS + 1];
 	ep2_t q[4];
 
 	bn_null(n);
+	bn_null(u);
 
 	RLC_TRY {
 		bn_new(n);
+		bn_new(u);
 		for (i = 0; i < 4; i++) {
-			bn_null(u[i]);
-			bn_null(v[i]);
 			bn_null(_k[i]);
 			ep2_null(q[i]);
-			bn_new(u[i]);
-			bn_new(v[i]);
 			bn_new(_k[i]);
 			ep2_new(q[i]);
 		}
 
 		ep2_curve_get_ord(n);
-
-		switch (ep_curve_is_pairf()) {
-			case EP_BN:
-				ep2_curve_get_vs(v);
-
-				for (i = 0; i < 4; i++) {
-					bn_mul(v[i], v[i], k);
-					bn_div(v[i], v[i], n);
-					if (bn_sign(v[i]) == RLC_NEG) {
-						bn_add_dig(v[i], v[i], 1);
-					}
-					bn_zero(_k[i]);
-				}
-
-				/* u0 = x + 1, u1 = 2x + 1, u2 = 2x, u3 = x - 1. */
-				fp_prime_get_par(u[0]);
-				bn_dbl(u[2], u[0]);
-				bn_add_dig(u[1], u[2], 1);
-				bn_sub_dig(u[3], u[0], 1);
-				bn_add_dig(u[0], u[0], 1);
-				bn_copy(_k[0], k);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_k[0], _k[0], n);
-					bn_sub(_k[0], _k[0], u[i]);
-					bn_mod(_k[0], _k[0], n);
-				}
-
-				/* u0 = x, u1 = -x, u2 = 2x + 1, u3 = 4x + 2. */
-				fp_prime_get_par(u[0]);
-				bn_neg(u[1], u[0]);
-				bn_dbl(u[2], u[0]);
-				bn_add_dig(u[2], u[2], 1);
-				bn_dbl(u[3], u[2]);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_k[1], _k[1], n);
-					bn_sub(_k[1], _k[1], u[i]);
-					bn_mod(_k[1], _k[1], n);
-				}
-
-				/* u0 = x, u1 = -(x + 1), u2 = 2x + 1, u3 = -(2x - 1). */
-				fp_prime_get_par(u[0]);
-				bn_add_dig(u[1], u[0], 1);
-				bn_neg(u[1], u[1]);
-				bn_dbl(u[2], u[0]);
-				bn_add_dig(u[2], u[2], 1);
-				bn_sub_dig(u[3], u[2], 2);
-				bn_neg(u[3], u[3]);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_k[2], _k[2], n);
-					bn_sub(_k[2], _k[2], u[i]);
-					bn_mod(_k[2], _k[2], n);
-				}
-
-				/* u0 = -2x, u1 = -x, u2 = 2x + 1, u3 = x - 1. */
-				fp_prime_get_par(u[1]);
-				bn_dbl(u[0], u[1]);
-				bn_neg(u[0], u[0]);
-				bn_dbl(u[2], u[1]);
-				bn_add_dig(u[2], u[2], 1);
-				bn_sub_dig(u[3], u[1], 1);
-				bn_neg(u[1], u[1]);
-				for (i = 0; i < 4; i++) {
-					bn_mul(u[i], u[i], v[i]);
-					bn_mod(u[i], u[i], n);
-					bn_add(_k[3], _k[3], n);
-					bn_sub(_k[3], _k[3], u[i]);
-					bn_mod(_k[3], _k[3], n);
-				}
-
-				for (i = 0; i < 4; i++) {
-					l = bn_bits(_k[i]);
-					bn_sub(_k[i], n, _k[i]);
-					if (bn_bits(_k[i]) > l) {
-						bn_sub(_k[i], _k[i], n);
-						_k[i]->sign = RLC_POS;
-					} else {
-						_k[i]->sign = RLC_NEG;
-					}
-				}
-				break;
-			default:
-				bn_abs(v[0], k);
-				fp_prime_get_par(u[0]);
-				bn_copy(u[1], u[0]);
-				if (bn_sign(u[0]) == RLC_NEG) {
-					bn_neg(u[0], u[0]);
-				}
-
-				for (i = 0; i < 4; i++) {
-					bn_mod(_k[i], v[0], u[0]);
-					bn_div(v[0], v[0], u[0]);
-					if ((bn_sign(u[1]) == RLC_NEG) && (i % 2 != 0)) {
-						bn_neg(_k[i], _k[i]);
-					}
-					if (bn_sign(k) == RLC_NEG) {
-						bn_neg(_k[i], _k[i]);
-					}
-				}
-				break;
-		}
+		fp_prime_get_par(u);
+		bn_rec_frb(_k, 4, k, u, n, ep_curve_is_pairf() == EP_B12);
 
 		ep2_norm(q[0], p);
 		ep2_frb(q[1], q[0], 1);
@@ -180,7 +74,6 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 				ep2_neg(q[i], q[i]);
 			}
 			_l[i] = RLC_FP_BITS + 1;
-			memset(naf[i], 0, _l[i]);
 			bn_rec_naf(naf[i], &_l[i], _k[i], 2);
 			l = RLC_MAX(l, _l[i]);
 		}
@@ -207,9 +100,8 @@ static void ep2_mul_glv_imp(ep2_t r, ep2_t p, const bn_t k) {
 	}
 	RLC_FINALLY {
 		bn_free(n);
+		bn_free(u);
 		for (i = 0; i < 4; i++) {
-			bn_free(u[i]);
-			bn_free(v[i]);
 			bn_free(_k[i]);
 			ep2_free(q[i]);
 		}
@@ -447,7 +339,7 @@ void ep2_mul_lwnaf(ep2_t r, ep2_t p, const bn_t k) {
 
 #if defined(EP_ENDOM)
 	if (ep_curve_is_endom()) {
-		if (ep_curve_opt_a() == RLC_ZERO) {
+		if (ep2_curve_opt_a() == RLC_ZERO) {
 			ep2_mul_glv_imp(r, p, k);
 		} else {
 			ep2_mul_naf_imp(r, p, k);
@@ -491,10 +383,13 @@ void ep2_mul_gen(ep2_t r, bn_t k) {
 }
 
 void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
-	int i, l;
 	ep2_t t;
+	bn_t _k;
+	int8_t u, naf[RLC_DIG + 1];
+	int l;
 
 	ep2_null(t);
+	bn_null(_k);
 
 	if (k == 0 || ep2_is_infty(p)) {
 		ep2_set_infty(r);
@@ -503,15 +398,22 @@ void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
 
 	RLC_TRY {
 		ep2_new(t);
+		bn_new(_k);
 
-		l = util_bits_dig(k);
+		bn_set_dig(_k, k);
 
-		ep2_copy(t, p);
+		l = RLC_DIG + 1;
+		bn_rec_naf(naf, &l, _k, 2);
 
-		for (i = l - 2; i >= 0; i--) {
+		ep2_set_infty(t);
+		for (int i = l - 1; i >= 0; i--) {
 			ep2_dbl(t, t);
-			if (k & ((dig_t)1 << i)) {
+
+			u = naf[i];
+			if (u > 0) {
 				ep2_add(t, t, p);
+			} else if (u < 0) {
+				ep2_sub(t, t, p);
 			}
 		}
 
@@ -522,5 +424,6 @@ void ep2_mul_dig(ep2_t r, ep2_t p, dig_t k) {
 	}
 	RLC_FINALLY {
 		ep2_free(t);
+		bn_free(_k);
 	}
 }

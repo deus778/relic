@@ -541,6 +541,7 @@ static int endomorphism(void) {
 			TEST_CASE("endomorphism in projective coordinates is correct") {
 				ep_rand(a);
 				ep_dbl_projc(a, a);
+				ep_norm(a, a);
 				ep_psi(b, a);
 				ep_mul(c, a, l);
 				TEST_ASSERT(ep_cmp(b, c) == RLC_EQ, end);
@@ -759,7 +760,7 @@ static int multiplication(void) {
 		TEST_END;
 #endif
 
-		TEST_CASE("multiplication by digit is correct") {
+		TEST_CASE("point multiplication by digit is correct") {
 			ep_mul_dig(r, p, 0);
 			TEST_ASSERT(ep_is_infty(r), end);
 			ep_mul_dig(r, p, 1);

@@ -267,21 +267,21 @@ int gt_is_valid(gt_t a) {
 			dv_copy(p->dp, fp_prime_get(), RLC_FP_DIGS);
 			p->used = RLC_FP_DIGS;
 			p->sign = RLC_POS;
-#ifdef GLS_MEMBER
-			/* Compute trace t = p - n + 1, and compute a^t. */
-			fp_prime_get_par(n);
-			b = fp_prime_get_par_sps(&l);
-			fp12_exp_cyc_sps((void *)v, (void *)a, b, l, RLC_POS);
-			fp12_exp_cyc_sps((void *)u, (void *)v, b, l, RLC_POS);
-			gt_sqr(v, u);
-			gt_sqr(u, v);
-			gt_mul(u, u, v);
-#else
-			/* Compute trace t = p - n + 1. */
-			bn_sub(n, p, n);
-			/* Compute u = a^t. */
-			gt_exp(u, a, n);
-#endif
+			if (ep_curve_is_pairf() == EP_BN) {
+				/* Compute trace t = p - n + 1, and compute a^t. */
+				fp_prime_get_par(n);
+				b = fp_prime_get_par_sps(&l);
+				fp12_exp_cyc_sps((void *)v, (void *)a, b, l, RLC_POS);
+				fp12_exp_cyc_sps((void *)u, (void *)v, b, l, RLC_POS);
+				gt_sqr(v, u);
+				gt_sqr(u, v);
+				gt_mul(u, u, v);
+			} else {
+				/* Compute trace t = p - n + 1. */
+				bn_sub(n, p, n);
+				/* Compute u = a^t. */
+				gt_exp(u, a, n);
+			}
 			/* Compute v = a^(p + 1). */
 			gt_frb(v, a, 1);
 			/* Check if a^(p + 1) = a^t. */
@@ -321,6 +321,7 @@ int gt_is_valid(gt_t a) {
 #endif
 					r &= fp12_test_cyc((void *)a);
 					break;
+#if FP_PRIME == 509
 				case EP_B24:
 #ifdef GLS_MEMBER
 					/* The 8-GLS recoding of the exponent gives this. */
@@ -350,6 +351,7 @@ int gt_is_valid(gt_t a) {
 #endif
 					r = fp24_test_cyc((void *)a);
 					break;
+#endif
 				default:
 					/* Common case. */
 					bn_sub_dig(n, n, 1);
